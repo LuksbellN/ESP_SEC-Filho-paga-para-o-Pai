@@ -1,0 +1,17 @@
+{
+  "examples": [
+    {
+      "height": 960793,
+      "parent": "6cf4de366f95dd7d85f4a8bd4082dbc22409f376e5e98416875869def860323f",
+      "child": "00a84f00d655d067144dae372916620b62df0969487f57e86e10a5d46e9aa0f0",
+      "verified": true
+    },
+    {
+      "height": 960179,
+      "parent": "5da18bca08910617e0be0f9e4343ec477ef1a30b268df9ace1feab062f1813ac",
+      "child": "562f9f09951c152bc580c10e4ba96ce06b59b2d580f1181e891821a610731d0d",
+      "verified": true
+    }
+  ],
+  "counts_consistent": true
+}

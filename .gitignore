@@ -1,0 +1,8 @@
+__pycache__/
+.venv/
+.deps/
+tmp/
+*.tgz
+*.tar.gz
+progress.md
+*.log

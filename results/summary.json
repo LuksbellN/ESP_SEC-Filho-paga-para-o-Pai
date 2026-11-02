@@ -1,0 +1,173 @@
+{
+  "archive_sha256": "679fe208f9a807fdd38e9d64948c73581af3e99ca52fb707ce06937e67bc536d",
+  "archive_bytes": 207436070,
+  "python": "3.12.14",
+  "parameters": {
+    "k": 2.0,
+    "sensitivity": [
+      1.5,
+      2.0,
+      3.0
+    ]
+  },
+  "blocks": 98,
+  "height_min": 960179,
+  "height_max": 960802,
+  "start_utc": "2026-07-30T00:39:11+00:00",
+  "end_utc": "2026-08-03T01:46:10+00:00",
+  "normal_transactions": 493473,
+  "coinbase": 98,
+  "direct_dependencies": 338781,
+  "simple_pairs": 8375,
+  "complex_components": 18227,
+  "complex_transactions": 346189,
+  "candidates": 552,
+  "unique_parents": 552,
+  "unique_children": 552,
+  "blocks_with_candidates": 60,
+  "candidate_fraction_pairs": 0.06591044776119404,
+  "candidate_fraction_transactions": 0.0011186022335568512,
+  "zero_fee_parents": 26,
+  "sensitivity": {
+    "1.5": 668,
+    "2.0": 552,
+    "3.0": 396
+  },
+  "metrics": {
+    "parent_fee": {
+      "count": 552,
+      "minimum": 0,
+      "median": 170.0,
+      "maximum": 5051,
+      "total": 146543
+    },
+    "child_fee": {
+      "count": 552,
+      "minimum": 111,
+      "median": 822.0,
+      "maximum": 35523,
+      "total": 694572
+    },
+    "parent_rate": {
+      "count": 552,
+      "minimum": 0.0,
+      "median": 1.0067678800073168,
+      "maximum": 4.219858156028369,
+      "total": 681.931017490205
+    },
+    "child_rate": {
+      "count": 552,
+      "minimum": 1.0,
+      "median": 5.028221885089664,
+      "maximum": 184.7340425531915,
+      "total": 3918.959564003987
+    },
+    "package_rate": {
+      "count": 552,
+      "minimum": 0.5609756097560976,
+      "median": 3.00184995562837,
+      "maximum": 68.44837758112094,
+      "total": 2036.157619123044
+    },
+    "consumed_sat": {
+      "count": 552,
+      "minimum": 330,
+      "median": 164939.5,
+      "maximum": 13132720455,
+      "total": 68388461156
+    },
+    "uplift": {
+      "count": 552,
+      "minimum": 0.2784897340498829,
+      "median": 1.7508991115265387,
+      "maximum": 67.33273132261753,
+      "total": 1354.226601632839
+    }
+  },
+  "unique_addresses": 469,
+  "missing_address_outputs": 0,
+  "consumed_outputs": 572,
+  "top_addresses": [
+    {
+      "address": "bc1pfeessrawgf",
+      "pairs": 57,
+      "value_sat": 27018
+    },
+    {
+      "address": "bc1q0h8mujmkue3yvfwdg5dhqvgcpmmse050anch0r",
+      "pairs": 12,
+      "value_sat": 3708
+    },
+    {
+      "address": "bc1qns9f7yfx3ry9lj6yz7c9er0vwa0ye2eklpzqfw",
+      "pairs": 11,
+      "value_sat": 2949979608
+    },
+    {
+      "address": "bc1pp0aue59r0shhzrc0ph9l6an8d96utq4gmk9hc2n5g60vvz0rv4ssnux995",
+      "pairs": 8,
+      "value_sat": 2640
+    },
+    {
+      "address": "bc1pa4yf6uz25jukh7hvdn22q5y2a6q9ufrw9pnv9lf8xhj9j9prhyfs4e0pmr",
+      "pairs": 5,
+      "value_sat": 5000
+    }
+  ],
+  "examples": [
+    {
+      "height": 960793,
+      "parent": "6cf4de366f95dd7d85f4a8bd4082dbc22409f376e5e98416875869def860323f",
+      "child": "00a84f00d655d067144dae372916620b62df0969487f57e86e10a5d46e9aa0f0",
+      "parent_fee": 164,
+      "child_fee": 23040,
+      "parent_vsize": 147,
+      "child_vsize": 192,
+      "parent_rate": 1.1156462585034013,
+      "child_rate": 120.0,
+      "median_rate": 2.0120481927710845,
+      "package_rate": 68.44837758112094,
+      "consumed_sat": 111271,
+      "consumed_outputs": [
+        {
+          "n": 0,
+          "value": 111271,
+          "address": "16PukMgi3ovHb5QuZSM85zuKg8r8FdqHRR"
+        }
+      ],
+      "uplift": 67.33273132261753,
+      "candidate_1.5": true,
+      "candidate_2.0": true,
+      "candidate_3.0": true,
+      "reasons": ""
+    },
+    {
+      "height": 960179,
+      "parent": "5da18bca08910617e0be0f9e4343ec477ef1a30b268df9ace1feab062f1813ac",
+      "child": "562f9f09951c152bc580c10e4ba96ce06b59b2d580f1181e891821a610731d0d",
+      "parent_fee": 0,
+      "child_fee": 503,
+      "parent_vsize": 155,
+      "child_vsize": 347,
+      "parent_rate": 0.0,
+      "child_rate": 1.4495677233429394,
+      "median_rate": 0.35,
+      "package_rate": 1.00199203187251,
+      "consumed_sat": 2852000,
+      "consumed_outputs": [
+        {
+          "n": 0,
+          "value": 2852000,
+          "address": "bc1qadwv77kqm0n6h92jw6mar9a24r8vlsdc7aj2v3l2l3wyheyxefcsjq0pf4"
+        }
+      ],
+      "uplift": 1.00199203187251,
+      "candidate_1.5": true,
+      "candidate_2.0": true,
+      "candidate_3.0": true,
+      "reasons": ""
+    }
+  ],
+  "anomalies": 0,
+  "unique_fee_total_sat": 841115
+}
