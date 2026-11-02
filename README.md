@@ -6,7 +6,7 @@ Trabalho acadêmico da disciplina de **Tópicos Especiais de Segurança**, ativi
 
 ## Entrega
 
-[Relatório em PDF](report/Filho_Paga_Para_Pai_Lucas_Belchior.pdf): seis páginas de conteúdo, uma de reprodução e referências, seguidas do código integral em apêndice. Documento único para entrega na plataforma da disciplina.
+[Relatório em PDF](report/Filho_Paga_Para_Pai_Lucas_Belchior.pdf): cinco páginas, com capa simples, objetivo, algoritmo, resultados, exemplos e referências. O código e as instruções de reprodução ficam neste repositório. Documento único para entrega na plataforma da disciplina.
 
 O objetivo é identificar transações compatíveis com CPFP usando dependências de UTxOs e taxas. Não há rótulos verdadeiros ou dados históricos da mempool para comprovar a intenção dos autores.
 
@@ -72,7 +72,7 @@ Os arquivos internos são JSONs com `height`, `hash`, `time`, `n_tx` e `tx`. As 
 
 ```text
 analyze.py        detector, censo e exportação de resultados
-build_report.py   gráficos e PDF, incluindo código em apêndice
+build_report.py   gráficos e PDF acadêmico resumido
 test_analyze.py   testes sintéticos de regras e integridade
 results/          CSVs, resumo JSON, verificação e três gráficos
 report/           PDF final

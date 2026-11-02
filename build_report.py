@@ -2,7 +2,6 @@
 import argparse
 import csv
 import json
-import textwrap
 from pathlib import Path
 from xml.sax.saxutils import escape
 
@@ -21,7 +20,7 @@ ROOT = Path(__file__).resolve().parent
 REPO = 'https://github.com/LuksbellN/ESP_SEC-Filho-paga-para-o-Pai'
 W, H = A4
 M, CW = 43, A4[0] - 86
-INK, TEAL, GRAY = '#202b36', '#14685d', '#5f6b73'
+INK, TEAL, GRAY = '#202020', '#333333', '#666666'
 
 
 def n(value, digits=0):
@@ -89,12 +88,13 @@ class Report:
             self.c.showPage()
         self.page += 1
         c = self.c
-        c.setFillColor(colors.HexColor(TEAL)); c.rect(M, H-35, CW, 3, fill=1, stroke=0)
+        c.setStrokeColor(colors.HexColor(GRAY)); c.setLineWidth(.5)
+        c.line(M, H-35, W-M, H-35)
         c.setFont('Body', 8); c.setFillColor(colors.HexColor(GRAY))
-        c.drawString(M, H-51, 'TÓPICOS ESPECIAIS DE SEGURANÇA  |  P1  |  02/11/2026')
-        c.drawRightString(W-M, 25, str(self.page))
-        c.drawString(M, 25, 'Lucas Belchior  |  Filho paga para o Pai')
-        self.y = H-78
+        c.drawString(M, H-27, 'TÓPICOS ESPECIAIS DE SEGURANÇA | FILHO PAGA PARA O PAI')
+        c.drawRightString(W-M, 25, f'{self.page} / 5')
+        c.drawString(M, 25, 'Lucas Panonko Assis Belchior | 12311BCC068 | 02/11/2026')
+        self.y = H-62
         self.p(title, 19, 'Bold', 25)
         self.y -= 6
 
@@ -113,7 +113,7 @@ class Report:
         cells = [[Paragraph(escape(str(x)), style) for x in row] for row in rows]
         t = Table(cells, colWidths=widths or [CW/len(rows[0])]*len(rows[0]))
         t.setStyle(TableStyle([
-            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#e7f0ed')),
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#eeeeee')),
             ('VALIGN', (0, 0), (-1, -1), 'TOP'),
             ('LINEBELOW', (0, 0), (-1, 0), .5, colors.HexColor(TEAL)),
             ('LINEBELOW', (0, 1), (-1, -1), .25, colors.HexColor('#dce1e3')),
@@ -138,202 +138,166 @@ def build_report(results: Path, output: Path) -> Path:
     plots(results, s)
     output.parent.mkdir(parents=True, exist_ok=True)
     r = Report(output)
-    r.new('Filho paga para o Pai')
-    r.p('Lucas Panonko Assis Belchior - Matrícula 12311BCC068', 10, 'Bold')
-    r.p('Detecção e análise de candidatos a Child Pays for Parent (CPFP)', 12)
-    r.p('1. Objetivo e dados', 12, 'Bold')
-    r.p('O objetivo é detectar uma transação pai de baixa taxa e uma transação filho '
-        'que consome pelo menos uma saída do pai, paga uma taxa maior e aparece no '
-        'mesmo bloco. As taxas das duas transações são destinadas ao minerador que '
-        'produziu esse bloco. A classificação econômica é uma heurística: a inclusão '
-        'conjunta comprova a dependência, mas não a intenção de acelerar a confirmação [1, 2].')
-    r.table([['Característica da amostra', 'Resultado'],
-             ['Fonte', 'blocos.tgz fornecido nos exercícios da disciplina'],
-             ['Arquivo compactado', n(s['archive_bytes'])+' bytes'],
-             ['Blocos analisados', n(s['blocks'])],
-             ['Alturas mínima e máxima', f"{s['height_min']} a {s['height_max']}"],
-             ['Período dos timestamps (UTC)', s['start_utc']+' até '+s['end_utc']],
-             ['Transações normais / coinbase', n(s['normal_transactions'])+' / '+n(s['coinbase'])],
-             ['Anomalias de integridade detectadas', n(s['anomalies'])]], [CW*.42, CW*.58])
-    r.p('A amostra não é tratada como uma sequência contínua de blocos nem como '
-        'representativa de toda a rede. Os JSONs são lidos diretamente do TAR '
-        'compactado, um bloco por vez. O hash do arquivo e os comandos de reprodução '
-        'estão na página de referências.')
-    r.p(f"Resultado principal: {n(s['candidates'])} pares candidatos, em "
-        f"{n(s['blocks_with_candidates'])} dos {n(s['blocks'])} blocos.", 12, 'Bold')
+    c = r.c
+    # Capa simples, seguindo a apresentação da entrega ColdCard - ML.
+    r.page = 1
+    def center(y, text, size=11, font='Body'):
+        c.setFont(font, size)
+        c.setFillColor(colors.HexColor(INK))
+        c.drawCentredString(W/2, y, text)
+    center(H-115, 'Tópicos Especiais de Segurança', 12, 'Bold')
+    center(H-185, 'Lucas Panonko Assis Belchior')
+    center(H-205, 'Matrícula: 12311BCC068', 10)
+    center(H/2+15, 'Filho paga para o Pai', 24, 'Bold')
+    center(H/2-15, 'Detecção e análise de transações compatíveis com CPFP', 10)
+    center(H/2-90, 'Repositório do projeto', 10, 'Bold')
+    center(H/2-110, REPO, 8)
+    c.linkURL(REPO, (M, H/2-115, W-M, H/2-95), relative=0)
+    center(110, '2 de novembro de 2026', 10)
 
-    r.new('Como o algoritmo detecta os pares')
-    r.p('2. Dependência e unidade de análise', 12, 'Bold')
-    r.p('Cada saída é identificada por (tx_index, n), no formato fornecido. O '
-        'tx_index é um identificador do provedor; o hash da transação é conservado '
-        'para auditoria. Uma entrada do filho deve referenciar uma saída existente '
-        'do pai, com o mesmo valor, e o pai deve aparecer antes do filho no bloco. '
-        'Várias saídas consumidas do mesmo pai formam uma única aresta.')
-    r.p('Construímos um grafo por bloco. A análise econômica usa somente componentes '
-        'conexos com duas transações e uma aresta: um par simples e isolado. '
-        'Componentes com três ou mais transações são contados separadamente. Isso '
-        'evita atribuir a um par a taxa de um pacote que contém outros ancestrais.')
-    r.p('3. Taxas e regra principal', 12, 'Bold')
-    r.p('f = soma das entradas - soma das saídas (satoshis)<br/>'
-        'v = teto(peso / 4) (vbytes); r = f / v (sat/vB)<br/>'
-        'r_conjunto = (f_pai + f_filho) / (v_pai + v_filho)', 10, 'Mono')
-    r.p('M é a mediana de sat/vB das transações normais do próprio bloco. '
-        'Um par simples é candidato quando atende simultaneamente:')
-    r.table([['Condição', 'Interpretação'],
-             ['r_pai < M', 'Pai relativamente barato no bloco'],
-             ['f_filho > f_pai', 'Filho paga mais em taxa absoluta'],
-             ['r_filho > r_pai e r_filho >= 2 × r_pai', 'Filho tem maior taxa por tamanho'],
-             ['r_conjunto >= M', 'Conjunto alcança a referência adotada']], [CW*.52, CW*.48])
-    r.p('Pai com taxa zero é permitido; o filho deve pagar taxa positiva. Não se '
-        'calcula razão dividindo por zero. Se M = 0, nenhum par atende à primeira '
-        'condição. M não é o limite de aceitação do minerador: é uma escolha didática.')
-    r.p('Fluxo: ler e validar bloco → indexar transações/saídas → criar arestas → '
-        'identificar componentes → aplicar regra → agregar resultados. O grafo '
-        'custa O(T + I + O), em média, por bloco; a mediana e as ordenações acrescentam '
-        'custo. T, I e O representam transações, entradas e saídas.')
+    r.new('Visão geral do trabalho')
+    r.p('01 / OBJETIVO', 9, 'Bold')
+    r.p('Desenvolver um algoritmo para detectar o padrão <b>Filho Paga para o Pai</b> '
+        '(Child Pays for Parent, CPFP) e analisar sua frequência, valores, taxas e endereços '
+        'nos blocos fornecidos pela disciplina.')
+    r.table([['Blocos analisados', 'Transações normais', 'Pares candidatos'],
+             [n(s['blocks']), n(s['normal_transactions']), n(s['candidates'])]], size=12)
+    r.p('Como funciona o CPFP', 12, 'Bold')
+    r.p('O <b>pai</b> cria uma saída não gasta (UTxO) e paga uma taxa baixa. '
+        'O <b>filho</b> consome essa saída e paga uma taxa mais alta. Quando ambos '
+        'entram no mesmo bloco, o minerador recebe as duas taxas. O filho pode, assim, '
+        'tornar economicamente mais atraente incluir o pai [1].')
+    r.table([['PAI', 'FILHO', 'MESMO BLOCO'],
+             ['Cria o UTxO e paga pouco', 'Gasta o UTxO e paga mais',
+              'Minerador recebe as duas taxas']], size=9.5)
+    r.p('Dados utilizados', 12, 'Bold')
+    r.p('Foi utilizado o <b>blocos.tgz</b> dos exercícios anteriores: 98 blocos não '
+        'contínuos, com alturas entre 960179 e 960802, registrados entre 30/07 e '
+        '03/08/2026 (UTC). Foram excluídas 98 transações coinbase, que criam moedas '
+        'e não representam o tipo de gasto procurado. A amostra não representa toda a rede.')
+    r.p('Resultado principal', 12, 'Bold')
+    r.p(f"Foram encontrados <b>{n(s['candidates'])} candidatos</b> entre "
+        f"{n(s['simple_pairs'])} pares simples ({pct(s['candidate_fraction_pairs'])}), "
+        f"distribuídos em {n(s['blocks_with_candidates'])} blocos. Os filhos candidatos "
+        f"representam {pct(s['candidate_fraction_transactions'])} das transações normais.")
+    r.p('A dependência entre as transações e a confirmação conjunta são observáveis '
+        'nos dados. A intenção de acelerar a confirmação não é comprovável apenas '
+        'pela blockchain; por isso, os resultados são chamados de <b>candidatos a CPFP</b>.')
 
-    r.new('Frequência e comparação das taxas')
-    r.table([['Indicador', 'Quantidade'],
-             ['Dependências diretas no mesmo bloco', n(s['direct_dependencies'])],
-             ['Pares simples elegíveis', n(s['simple_pairs'])],
-             ['Componentes complexos / transações nesses componentes',
-              n(s['complex_components'])+' / '+n(s['complex_transactions'])],
-             ['Candidatos / pares simples', n(s['candidates'])+' / '+n(s['simple_pairs'])+' = '+pct(s['candidate_fraction_pairs'])],
-             ['Filhos candidatos / transações normais', n(s['unique_children'])+' / '+n(s['normal_transactions'])+' = '+pct(s['candidate_fraction_transactions'])]], [CW*.69, CW*.31], 8.6)
-    r.image(results/'figures/frequency.png', 170)
-    r.p('Figura 1. Candidatos por bloco amostrado; os intervalos sem blocos no arquivo '
-        'não são preenchidos com zeros.', 8.4)
-    r.image(results/'figures/rates.png', 190)
-    r.p('Figura 2. Todos os pares simples. Escala symlog nos dois eixos: linear '
-        'até 1 sat/vB e logarítmica acima, preservando os casos de taxa zero. '
-        'Os pontos destacados satisfazem todas as condições, não apenas a diferença de taxas.', 8.4)
+    r.new('Algoritmo e critérios de detecção')
+    r.p('02 / METODOLOGIA', 9, 'Bold')
+    r.p('Implementação em Python', 12, 'Bold')
+    r.p('1. Ler um bloco por vez e indexar suas transações e saídas.<br/>'
+        '2. Para cada entrada, procurar a transação que criou a saída consumida.<br/>'
+        '3. Se o pai estiver no mesmo bloco, conferir a saída, o valor e sua posição '
+        'anterior ao filho. Registrar uma ligação pai → filho.<br/>'
+        '4. Agrupar as ligações em componentes. Aplicar a regra de taxas aos pares '
+        'isolados de duas transações e agregar os resultados.')
+    r.p('Se várias entradas do filho gastam saídas do mesmo pai, elas formam um único '
+        'par, com os valores somados. Componentes com três ou mais transações '
+        '(cadeias ou ramificações) são contados separadamente: a taxa de um par '
+        'isolado não descreve todo esse pacote.')
+    r.p('Cálculo das taxas', 12, 'Bold')
+    r.p('Taxa = soma dos valores das entradas − soma dos valores das saídas.<br/>'
+        'Tamanho virtual = teto(peso da transação / 4).<br/>'
+        'Taxa por tamanho = taxa / tamanho virtual, em sat/vB.<br/>'
+        'Taxa conjunta = (taxa do pai + taxa do filho) / '
+        '(tamanho virtual do pai + tamanho virtual do filho).')
+    r.p('A comparação usa sat/vB: pagar mais satoshis não garante uma taxa por '
+        'tamanho maior. Define-se <b>M</b> como a mediana de sat/vB das transações '
+        'normais do bloco. O par precisa satisfazer todas as condições:')
+    r.table([['Critério', 'Condição'],
+             ['Pai com taxa baixa', 'Taxa por tamanho do pai < M'],
+             ['Filho com taxa alta', 'Taxa absoluta maior que a do pai e taxa por tamanho '
+              'maior e pelo menos 2 vezes a do pai'],
+             ['Compensação conjunta', 'Taxa conjunta ≥ M']], [CW*.34, CW*.66])
+    r.p('Pai com taxa zero é permitido, desde que o filho pague taxa positiva e o '
+        'conjunto alcance M. Não se divide pela taxa do pai. Se M for zero, nenhum '
+        'par tem taxa estritamente abaixo dela. Esses limiares são escolhas '
+        'didáticas, não regras do protocolo nem limites conhecidos do minerador.', 9)
+    r.p('Verificação: nove testes sintéticos cobrem taxas, referências, coinbase, '
+        'cadeias e saídas sem endereço. A análise completa não detectou inconsistências '
+        'de taxas ou referências internas; os exemplos foram reconferidos na fonte.', 9)
 
-    r.new('Taxas, valores e endereços')
+    r.new('Frequência, valores e endereços')
+    r.p('03 / RESULTADOS', 9, 'Bold')
+    r.p(f"Foram observadas {n(s['direct_dependencies'])} dependências diretas no mesmo "
+        f"bloco. Destas estruturas, {n(s['simple_pairs'])} são pares simples. Outros "
+        f"{n(s['complex_components'])} componentes possuem três ou mais transações "
+        'e ficaram fora da classificação econômica principal.', 9.2)
+    r.image(results/'figures/frequency.png', 145)
+    r.p('Candidatos por bloco amostrado, em ordem de altura. Intervalos sem blocos '
+        'no arquivo foram omitidos; não representam blocos sem candidatos.', 8)
     ms = s['metrics']
-    r.table([['Medida entre candidatos', 'Mínimo', 'Mediana', 'Máximo']]+[
-        [label, n(ms[key]['minimum'], digits), n(ms[key]['median'], max(digits, 1)),
+    r.table([['Medida entre os 552 candidatos', 'Mínimo', 'Mediana', 'Máximo']]+[
+        [label, n(ms[key]['minimum'], digits), n(ms[key]['median'], max(1, digits)),
          n(ms[key]['maximum'], digits)] for key, label, digits in [
-            ('parent_fee', 'Taxa do pai (sat)', 0), ('child_fee', 'Taxa do filho (sat)', 0),
-            ('parent_rate', 'Pai (sat/vB)', 3), ('child_rate', 'Filho (sat/vB)', 3),
-            ('package_rate', 'Conjunto (sat/vB)', 3),
-            ('consumed_sat', 'Valor consumido do pai (sat)', 0)]], [CW*.43, CW*.19, CW*.19, CW*.19], 8.3)
-    r.p(f"Os candidatos têm {n(s['unique_parents'])} pais e {n(s['unique_children'])} filhos "
-        f"distintos; {n(s['zero_fee_parents'])} pais pagam taxa zero. As taxas das "
-        f"transações únicas somam {n(s['unique_fee_total_sat'])} sat. O valor das "
-        f"saídas dos pais consumidas pelos filhos soma {n(ms['consumed_sat']['total'])} "
-        f"sat ({n(ms['consumed_sat']['total']/100000000, 8)} BTC). "
-        'Esse valor pode circular em outras transações: não representa dinheiro novo ou prejuízo.')
-    r.p(f"Foram observados {n(s['unique_addresses'])} endereços distintos nas saídas "
-        f"consumidas dos pais; {n(s['missing_address_outputs'])} de "
-        f"{n(s['consumed_outputs'])} saídas não possuem endereço informado.")
+            ('parent_fee', 'Taxa do pai (sat)', 0),
+            ('child_fee', 'Taxa do filho (sat)', 0),
+            ('package_rate', 'Taxa conjunta (sat/vB)', 3),
+            ('consumed_sat', 'Valor consumido do pai (sat)', 0)]],
+            [CW*.43, CW*.19, CW*.19, CW*.19], 8.3)
+    r.p(f"Há {n(s['zero_fee_parents'])} pais candidatos com taxa zero. As taxas das "
+        f"transações dos candidatos somam {n(s['unique_fee_total_sat'])} sat. "
+        f"O valor consumido dos pais soma {n(ms['consumed_sat']['total']/100000000, 8)} BTC. "
+        'São valores transferidos entre transações, não dinheiro novo ou prejuízo. '
+        'O máximo consumido é muito superior à mediana; o total não descreve '
+        'um par típico. 1 BTC = 100.000.000 sat.', 8.7)
+    r.p('Endereços mais recorrentes nas saídas consumidas', 10.5, 'Bold')
     r.table([['Endereço da saída do pai', 'Pares', 'Valor (sat)']]+[
-        [a['address'], n(a['pairs']), n(a['value_sat'])] for a in s['top_addresses']],
-        [CW*.68, CW*.10, CW*.22], 7.8)
-    r.p('Tabela de até cinco endereços mais recorrentes. Um endereço é contado uma '
-        'vez por par, mesmo se houver várias saídas consumidas. Os valores agregam '
-        'essas saídas. Endereço não equivale a pessoa; a análise não identifica '
-        'proprietários nem deduz que pai e filho pertencem à mesma carteira.')
+        [a['address'], n(a['pairs']), n(a['value_sat'])] for a in s['top_addresses'][:3]],
+        [CW*.65, CW*.10, CW*.25], 7.7)
+    r.p(f"Foram observados {n(s['unique_addresses'])} endereços distintos nas "
+        f"{n(s['consumed_outputs'])} saídas consumidas, sem endereços ausentes. "
+        'Cada endereço é contado uma vez por par. A recorrência não identifica '
+        'pessoas ou carteiras.', 8.6)
+    r.p('O endereço mais frequente movimenta menos valor que o terceiro da tabela. '
+        'Assim, frequência de uso e valor transferido são medidas distintas.', 8.6)
 
-    r.new('Exemplos rastreáveis nos dados')
-    for i, p in enumerate(s['examples'], 1):
-        r.p(f"Exemplo {i} - bloco {p['height']}", 11, 'Bold')
-        r.p('Pai: '+p['parent']+'<br/>Filho: '+p['child'], 7.2, 'Mono', 11)
-        r.table([['Medida', 'Pai', 'Filho'],
-                 ['Taxa (sat)', n(p['parent_fee']), n(p['child_fee'])],
-                 ['Tamanho virtual (vB)', n(p['parent_vsize']), n(p['child_vsize'])],
-                 ['Taxa por tamanho (sat/vB)', n(p['parent_rate'], 4), n(p['child_rate'], 4)]],
-                [CW*.5, CW*.25, CW*.25], 8.5)
-        r.p(f"Taxa conjunta: {n(p['package_rate'], 4)} sat/vB; mediana do bloco: "
-            f"{n(p['median_rate'], 4)} sat/vB. Aumento absoluto em relação ao pai: "
-            f"{n(p['uplift'], 4)} sat/vB. Valor consumido: {n(p['consumed_sat'])} sat. "
-            f"Classificação: {'candidato' if p['candidate_2.0'] else 'rejeitado: '+p['reasons']}.", 9)
-        consumed = '; '.join(f"saída {o['n']}: {n(o['value'])} sat, "
-                             f"{o['address'] or 'endereço ausente'}" for o in p['consumed_outputs'])
-        r.p(escape(consumed), 7.5)
-    r.p('Seleção dos exemplos: maior aumento absoluto da taxa do conjunto em relação '
-        'ao pai e, depois, menor taxa do pai entre os demais candidatos. Os vínculos '
-        'e cálculos foram reconferidos diretamente nos blocos originais. '
-        'A seleção ilustra o mecanismo e não representa o caso típico.', 8.7)
-
-    r.new('Sensibilidade, limites e conclusão')
-    r.image(results/'figures/sensitivity.png', 185)
-    r.p('Figura 3. Variação apenas do multiplicador mínimo da taxa por tamanho do '
-        'filho em relação ao pai. Todas as demais condições permanecem fixas. '
-        'Os três valores foram definidos antes de examinar os resultados.', 8.6)
-    r.p('Limitações', 12, 'Bold')
-    r.p('A regra usa taxas relativas ao próprio bloco, sem estimar a política '
-        'real do minerador. Não há dados históricos da mempool, tempo de espera, '
-        'declaração de intenção ou rótulos verdadeiros. Por isso, não se calculam '
-        'acurácia, precisão ou recall, e os pares classificados são candidatos '
-        'compatíveis com CPFP, não ocorrências confirmadas por intenção.')
-    r.p('Pacotes com três ou mais transações ficam fora da classificação principal, '
-        'embora possam conter CPFP. A contagem é restrita aos pares simples da '
-        'amostra e não mede a frequência global da técnica. Gastos comuns podem '
-        'satisfazer os critérios. Endereços ausentes limitam a análise de recorrência.')
-    r.p('Validação', 12, 'Bold')
-    r.p('Os testes sintéticos verificam: taxa zero, mediana zero, arredondamento de '
-        'peso, taxas inconsistentes, entradas repetidas do mesmo pai, pais externos, '
-        'cadeias, ramificações, coinbase, referências internas inválidas e endereço '
-        'ausente. Na base completa, foram conferidos duplicados, taxas, referências '
-        'internas e a ordem pai-filho. Os dois exemplos foram recalculados na fonte.')
-    r.p('Conclusão', 12, 'Bold')
-    r.p(f"O algoritmo encontrou {n(s['candidates'])} candidatos entre "
-        f"{n(s['simple_pairs'])} pares simples ({pct(s['candidate_fraction_pairs'])}). "
-        'O trabalho mostra como o grafo de UTxOs e a taxa conjunta permitem '
-        'detectar um padrão econômico explicável. A principal distinção aprendida '
-        'é entre observar uma dependência na cadeia e comprovar a motivação de quem '
-        'criou a transação.')
-
-    r.new('Reprodução e referências')
-    r.p('Código e resultados', 12, 'Bold')
-    r.p(f'<link href="{REPO}" color="{TEAL}">{REPO}</link>', 8.5)
-    r.p('O repositório contém os dois scripts, testes, tabelas resumidas e este PDF. '
-        'O arquivo original não é redistribuído: usar o blocos.tgz fornecido pela '
-        'disciplina. O apêndice traz o código integral, para que o documento seja '
-        'autossuficiente. As tabelas completas são regeneradas pelos comandos abaixo.')
-    r.p('Python 3.12 ou superior. Dentro da pasta do repositório, com um interpretador '
-        'Python instalado e funcional:')
-    r.p('Dependências usadas: matplotlib 3.10.7, reportlab 4.4.9 e pypdf 6.10.0 '
-        '(conteúdo de requirements.txt). O detector usa somente a biblioteca padrão.', 8.7)
-    r.p('python -m pip install -r requirements.txt<br/>'
-        'python -m unittest -v test_analyze<br/>'
-        'python analyze.py --archive ../blocos.tgz --output results<br/>'
-        'python build_report.py --results results<br/>'
-        'No último comando, o PDF é gravado em report/.', 8, 'Mono', 13)
-    r.p('Identificação exata do arquivo de entrada (SHA-256):', 9)
-    r.p(s['archive_sha256'], 7.7, 'Mono')
-    r.p('Saídas: pairs.csv (pares simples e motivos de rejeição), blocks.csv (censo '
-        'por bloco), addresses.csv (endereços dos candidatos) e summary.json '
-        '(parâmetros, totais, métricas e exemplos). Valores monetários estão em '
-        'satoshis; 1 BTC = 100.000.000 sat.')
-    r.p('Referências', 12, 'Bold')
-    r.p('[1] Enunciado da atividade “(P1) Filho paga para o Pai”, disciplina de '
-        'Tópicos Especiais de Segurança. Material fornecido ao aluno, 2026.<br/><br/>'
-        '[2] BITCOIN CORE. Bitcoin Core 0.13.0 Released!, seção “More intelligent '
-        'transaction selection for mining”, 23 ago. 2016. Disponível em: '
+    r.new('Exemplos e análise dos resultados')
+    r.p('04 / DISCUSSÃO', 9, 'Bold')
+    r.p('Dois exemplos reais', 12, 'Bold')
+    examples = s['examples']
+    r.table([['Medida', 'Bloco '+str(examples[0]['height']),
+              'Bloco '+str(examples[1]['height'])]]+[
+        [label]+[n(p[key], digits) for p in examples] for key, label, digits in [
+            ('parent_fee', 'Taxa do pai (sat)', 0),
+            ('child_fee', 'Taxa do filho (sat)', 0),
+            ('parent_rate', 'Pai (sat/vB)', 4),
+            ('child_rate', 'Filho (sat/vB)', 4),
+            ('package_rate', 'Conjunto (sat/vB)', 4),
+            ('median_rate', 'Mediana do bloco (sat/vB)', 4),
+            ('consumed_sat', 'Valor consumido do pai (sat)', 0)]],
+            [CW*.46, CW*.27, CW*.27], 8.5)
+    r.p('O primeiro exemplo tem o maior aumento absoluto da taxa do conjunto em '
+        'relação ao pai entre os candidatos. O segundo mostra um pai com taxa zero: '
+        'o filho paga 503 sat e eleva a taxa conjunta acima da mediana do bloco. '
+        'Em ambos, o filho consome a saída 0 do pai, e as duas transações estão no '
+        'mesmo bloco. Os identificadores completos estão nos resultados do repositório.', 9)
+    r.p('Sensibilidade da regra', 11, 'Bold')
+    r.table([['Multiplicador mínimo da taxa do filho', '1,5 ×', '2 × (principal)', '3 ×'],
+             ['Pares candidatos']+[n(v) for v in s['sensitivity'].values()]],
+            [CW*.49, CW*.17, CW*.17, CW*.17], 8.5)
+    r.p('Apenas o multiplicador varia; os outros critérios permanecem fixos. '
+        'A contagem diminui com a exigência de uma diferença maior de taxas, '
+        'mostrando que o resultado depende da definição adotada para taxa alta.', 9)
+    r.p('Conclusão e limitações', 11, 'Bold')
+    r.p('O algoritmo identifica um padrão compatível com CPFP combinando a dependência '
+        'entre UTxOs e a taxa conjunta. Foram encontrados <b>552 candidatos</b>, '
+        'mas gastos comuns também podem satisfazer a regra. Sem registros históricos '
+        'da mempool ou confirmação dos autores, não é possível provar intenção, '
+        'necessidade de aceleração ou o limite real de seleção do minerador. '
+        'Pacotes complexos não foram classificados, e o recorte não permite '
+        'estimar a frequência global da técnica.', 9)
+    r.p('Referências e código', 10.5, 'Bold')
+    r.p('[1] BITCOIN CORE. Bitcoin Core 0.13.0 Released!, seção “More intelligent '
+        'transaction selection for mining”, 2016. '
         '<link href="https://bitcoincore.org/en/2016/08/23/release-0.13.0/">'
-        'https://bitcoincore.org/en/2016/08/23/release-0.13.0/</link>. '
-        'Acesso em: 2 nov. 2026.<br/><br/>'
-        '[3] blocos.tgz. Conjunto de blocos JSON fornecido nos exercícios anteriores '
-        'da disciplina. Arquivo identificado pelo SHA-256 acima.', 9)
-    r.p('Apêndice - código-fonte integral', 12, 'Bold')
-    r.p('As páginas seguintes reproduzem analyze.py e build_report.py com números '
-        'de linha. Linhas longas são quebradas visualmente; para execução, usar '
-        'os arquivos do repositório. A lógica de detecção não depende de rede, '
-        'serviços pagos ou aprendizado de máquina.')
-    for filename in ['analyze.py', 'build_report.py']:
-        lines = []
-        for num, line in enumerate((ROOT/filename).read_text(encoding='utf-8').splitlines(), 1):
-            wrapped = textwrap.wrap(line.expandtabs(4), width=99, replace_whitespace=False,
-                                    drop_whitespace=False) or ['']
-            lines.extend([f'{num:03d}  '+wrapped[0]]+['     '+v for v in wrapped[1:]])
-        for offset in range(0, len(lines), 65):
-            r.new(f'Apêndice | {filename}')
-            r.c.setFont('Mono', 7.5)
-            r.c.setFillColor(colors.HexColor(INK))
-            for line in lines[offset:offset+65]:
-                r.c.drawString(M, r.y, line)
-                r.y -= 10.1
+        'bitcoincore.org/en/2016/08/23/release-0.13.0/</link>. Acesso: 02/11/2026.<br/>'
+        '[2] Enunciado da atividade “(P1) Filho paga para o Pai” e blocos.tgz '
+        'fornecidos pela disciplina.<br/>'
+        f'Código, testes, dados derivados e instruções: '
+        f'<link href="{REPO}">{REPO}</link>.', 7.8)
     r.c.save()
     print(f'PDF: {output.resolve()} ({r.page} páginas)')
     return output
